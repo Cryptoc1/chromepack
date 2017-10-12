@@ -1,0 +1,33 @@
+{
+  "name": "chromepack",
+  "version": "1.0.0",
+  "description": "A tool for packaging Chrome Extensions",
+  "main": "dist/chromepack.js",
+  "scripts": {
+    "build": "node node_modules/webpack/bin/webpack.js --colors --progress",
+    "run": "node dist/chromepack.js",
+    "test": "node dist/chromepack.js -c test/chromepack.config.js",
+    "webpack": "node node_modules/webpack/bin/webpack.js --colors --progress"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Cryptoc1/chromepack.git"
+  },
+  "author": "Samuel Steele <@cryptoc1>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Cryptoc1/chromepack/issues"
+  },
+  "homepage": "https://github.com/Cryptoc1/chromepack#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-syntax-dynamic-import": "^6.18.0",
+    "babel-plugin-transform-decorators": "^6.24.1",
+    "babel-preset-minify": "^0.2.0",
+    "webpack": "^3.7.1"
+  },
+  "dependencies": {
+    "optimist": "^0.6.1"
+  }
+}
