@@ -10,23 +10,29 @@ class ChromePacker extends EventEmitter {
   constructor (config) {
     super()
     this.config = config
+    this.timing = {
+      start: null,
+      end: null,
+      duration: null
+    }
   }
 
-  getFiles () {
-    return glob(this.config.src, {
+  async getFiles () {
+    let files = await glob(this.config.src, {
       cwd: this.config.__dir
     })
+
+    const cwd = process.cwd()
+    return files.map(file => path.relative(cwd, path.resolve(this.config.__dir, file)))
   }
 
   pack () {
     return new Promise(async (resolve, reject) => {
       await this.runPrePackTasks()
 
-      const start = Date.now()
+      const start = this.timing.start = Date.now()
 
       let files = await this.getFiles()
-
-      console.json(this.config.src, files)
 
       if (files.length === 0) {
         let err = new Error('There are no files to pack')
@@ -43,8 +49,10 @@ class ChromePacker extends EventEmitter {
       const outputStream = fs.createWriteStream(dest)
       const archive = archiver('zip')
 
-      outputStream.on('close', e => {
-        const end = Date.now()
+      outputStream.on('close', async e => {
+        const end = this.timing.end = Date.now()
+        const duration = this.timing.duration = end - start
+
         const res = {
           bytes: archive.pointer(),
           destination: dest,
@@ -52,9 +60,13 @@ class ChromePacker extends EventEmitter {
           timing: {
             start: start,
             end: end,
-            duration: end - start
+            duration: duration
           }
         }
+
+        this.emit('packed', res)
+
+        await this.runPostPackTasks()
 
         this.emit('pack.done', res)
         this.emit('done', res)
@@ -80,11 +92,9 @@ class ChromePacker extends EventEmitter {
 
       archive.pipe(outputStream)
 
-      for (let file of files) archive.file(file)
+      for (let file of files) archive.file(file, { name: path.relative(this.config.__dir, file) })
 
       archive.finalize()
-
-      await this.runPostPackTasks()
     })
   }
 

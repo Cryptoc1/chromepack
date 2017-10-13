@@ -18,77 +18,92 @@ const formatBytes = bytes => {
 }
 
 class Program {
-  static async main (argv) {
+  static async main (...args) {
+    return program.main.apply(program, args)
+  }
+
+  async main (argv) {
     let config = await ConfigUtility.load(argv.config, argv.manifest)
 
-    let packer = new ChromePacker(config)
+    this.packer = new ChromePacker(config)
 
-    Program.bindEvents(packer)
+    this.bindEvents()
+
+    console.log('> Starting pack')
 
     let result = null
     try {
-      result = await packer.pack()
+      result = await this.packer.pack()
     } catch (err) {
-      Program.onPackerError(err)
+      this.onPackerError(err)
     }
 
-    let [size, unit] = formatBytes(result.bytes)
-
-    console.log(`\n[${Math.round(result.duration)}] > ${result.dest} ${size.toFixed(2).replace(/.00/, '')} ${unit}`, '\x1b[32m{built}\x1b[0m')
-    console.log(`\nComplete: Packed ${result.files.length} files in ${result.timing.duration}ms\n`)
+    console.log(`\n\nComplete: Packed ${result.files.length} files in ${result.timing.duration}ms\n`)
   }
 
-  static bindEvents (packer) {
-    packer.on('error', err => Program.onPackerError(err))
-    packer.on('warning', warning => Program.onPackerWarning(warning))
+  bindEvents () {
+    this.packer.on('error', err => this.onPackerError(err))
+    this.packer.on('warning', warning => this.onPackerWarning(warning))
 
-    packer.on('pack.start', e => Program.onPackerStart(e))
-    packer.on('pack.archive.entry', e => Program.onPackerEntry(e))
-    packer.on('pack.progress', e => Program.onPackerProgress(e))
+    this.packer.on('pack.start', e => this.onPackerStart(e))
+    this.packer.on('pack.archive.entry', e => this.onPackerEntry(e))
+    this.packer.on('packed', e => this.onPackerPacked(e))
 
-    packer.on('task.before-execute', e => Program.onBeforeTaskExecute(e))
-    packer.on('task.executed', e => Program.onTaskExecuted(e))
+    this.packer.on('task.before-execute', e => this.onBeforeTaskExecute(e))
+    this.packer.on('task.executed', e => this.onTaskExecuted(e))
 
-    packer.on('tasks.pre-executed', e => Program.onPrePackTasksExecuted(e))
-    packer.on('tasks.post-executed', e => Program.onPostPackTasksExecuted(e))
+    this.packer.on('tasks.pre-executed', e => this.onPrePackTasksExecuted(e))
+    this.packer.on('tasks.post-executed', e => this.onPostPackTasksExecuted(e))
   }
 
-  static onBeforeTaskExecute (e) {
-    console.log(`Running ${e.type}-pack task \`${e.task}\``)
+  getTimeSinceStart () {
+    return Math.round(Date.now() - this.packer.timing.start)
   }
 
-  static onPackerEntry (e) {
-    console.json(e)
+  onBeforeTaskExecute (e) {
+    console.log(`Running ${e.type}-pack task \`${e.task}\`:`)
   }
 
-  static onPackerError (err) {
+  onPackerEntry (e) {
+    let [size, unit] = formatBytes(e.stats.size)
+    console.log(`[${this.getTimeSinceStart()}] + ${e.name} ${size.toFixed(2).replace(/.00/, '')} ${unit}`, '\x1b[32m{packed}\x1b[0m')
+  }
+
+  onPackerError (err) {
     if (!(err instanceof Error)) err = new Error(err.toString())
     throw err
   }
 
-  static onPackerProgress (e) {
-    console.json(e)
+  onPackerPacked (e) {
+    let [size, unit] = formatBytes(e.bytes)
+    console.log(`\n[${this.getTimeSinceStart()}] ${e.destination} ${size.toFixed(2).replace(/.00/, '')} ${unit}`, '\x1b[32m{built}\x1b[0m')
+    console.log(`> Finished packing ${e.files.length} files\n`)
   }
 
-  static onPackerStart (e) {
-    console.log(`Packing ${e.files.length} files:`)
+  onPackerStart (e) {
+    console.log(`\nPacking ${e.files.length} files:`)
   }
 
-  static onPackerWarning (e) {
+  onPackerWarning (e) {
     console.warn(e)
   }
 
-  static onPostPackTasksExecuted (e) {
-    console.log(`[${e.timing.duration}] > Finished executing ${e.count} post-pack tasks\n`)
+  onPostPackTasksExecuted (e) {
+    console.log(`> Finished executing ${e.count} post-pack tasks`)
   }
 
-  static onPrePackTasksExecuted (e) {
-    console.log(`[${e.timing.duration}] > Finished executing ${e.count} pre-pack tasks\n`)
+  onPrePackTasksExecuted (e) {
+    console.log(`> Finished executing ${e.count} pre-pack tasks`)
   }
 
-  static onTaskExecuted (e) {
-    console.log(`Completed ${e.type}-pack task: \`${e.task}\`\n${e.output}`)
+  onTaskExecuted (e) {
+    // console.log(`Completed ${e.type}-pack task: \`${e.task}\`\n${e.output}`)
+    console.log(e.output)
   }
 }
 
-export default Program
+export { Program }
+
+const program = new Program()
+
+export default program
