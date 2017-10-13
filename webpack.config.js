@@ -15,7 +15,8 @@ const config = {
       loader: 'babel-loader',
       options: {
         presets: ['minify'],
-        plugins: ['syntax-dynamic-import', 'transform-decorators']
+        plugins: ['syntax-dynamic-import', 'transform-decorators'],
+        sourceMaps: true
       },
       test: /\.js?/
     }]
@@ -28,7 +29,7 @@ const config = {
 
   plugins: [],
 
-  target: 'node'
+  target: 'async-node'
 }
 
 module.exports = config

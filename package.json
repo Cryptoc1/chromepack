@@ -6,7 +6,7 @@
   "scripts": {
     "build": "node node_modules/webpack/bin/webpack.js --colors --progress",
     "run": "node dist/chromepack.js",
-    "test": "node dist/chromepack.js -c test/chromepack.config.js",
+    "test": "node dist/chromepack.js -c test/chromepack.config.json",
     "webpack": "node node_modules/webpack/bin/webpack.js --colors --progress"
   },
   "repository": {
@@ -28,6 +28,8 @@
     "webpack": "^3.7.1"
   },
   "dependencies": {
+    "archiver": "^2.0.3",
+    "globby": "^6.1.0",
     "optimist": "^0.6.1"
   }
 }

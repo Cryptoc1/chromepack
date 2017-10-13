@@ -1,4 +1,7 @@
 import path from 'path'
+import { Util, FileUtility } from '.'
+
+const WORKING_DIR = process.cwd()
 
 class ConfigUtility {
   /**
@@ -49,29 +52,31 @@ class ConfigUtility {
       })
   } */
 
-  static async load(configPath) {
-    let cwd = process.cwd()
-    configPath = path.relative(cwd, path.resolve(cwd, configPath))
-    console.log(configPath)
-    // let config = await this.loadConfig(`./${configPath}`)
-    let config = require(`./${configPath}`)
-    let manifest = await this.loadManifest(path.resolve(cwd, config.manifest || './manifest.json'))
+  static configure (config, manifest) {
+    console.json(config)
 
+    this.configureOutput(config, manifest)
+    this.configureSource(config, manifest)
+    this.configureTasks(config, manifest)
+
+    console.json(config)
+
+    return config
+  }
+
+  static configureOutput (config, manifest) {
     config.output = Object.assign({
       name: '[name].[version].[timestamp]',
-      path: process.cwd()
+      path: WORKING_DIR
     }, config.output)
-    config.output.name = config.output.name
-      .replace(/\[name\]/, manifest.name.toLowerCase().replace(/\s/g, '-'))
-      .replace(/\[version\]/, manifest.version.replace(/\./g, '_'))
-      .replace(/\[timestamp\]/, Date.now())
+    config.output.name = this.formatOutputName(config.output.name, manifest)
+  }
 
-    /* src modifications */
+  static configureSource (config, manifest) {
     config.src = config.src || []
     config.src.push('manifest.json')
 
-    /* tasks */
-    config.tasks = Object.assign({}, config.tasks)
+    // console.json(config)
 
     /* Scrape the manifest for sources that should be included */
     // background pages
@@ -89,22 +94,57 @@ class ConfigUtility {
     if (manifest.icons) for (let key in manifest.icons) config.src.push(manifest.icons[key])
     // web accessible resources
     if (manifest.web_accessible_resources) config.src.push(...manifest.web_accessible_resources)
+  }
+
+  static configureTasks (config, manifest) {
+    config.tasks = Object.assign({}, config.tasks)
+    config.tasks.pre = config.tasks.pre || []
+    config.tasks.post = config.tasks.post || []
+  }
+
+  static formatOutputName (name, manifest) {
+    let _name = Util.hasValue(manifest.name) ? manifest.name.toLowerCase().replace(/\s/g, '-') : 'extenion'
+    let version = Util.hasValue(manifest.version) ? manifest.version.replace(/\./g, '_') : 'x_x_x'
+    return name.replace(/\[name\]/, _name)
+      .replace(/\[version\]/, version)
+      .replace(/\[timestamp\]/, Date.now())
+  }
+
+  static async load (configPath, manifestPath) {
+    configPath = path.resolve(WORKING_DIR, configPath)
+    let config = await this.loadConfig(configPath)
+    let index = configPath.lastIndexOf(path.sep)
+    config.__dir = configPath.substring(0, index < 0 ? configPath.length : index)
+
+    manifestPath = path.resolve(path.parse(configPath).dir, Util.hasValue(manifestPath) ? manifestPath : Util.hasValue(config.manifest) ? config.manifest : './manifest.json')
+    let manifest = await this.loadManifest(manifestPath)
+
+    console.json(config)
+
+    return this.configure(config, manifest)
+  }
+
+  static async loadConfig (path) {
+    let buf = await FileUtility.read(path)
+
+    let str = buf.toString('utf8')
+    let config = JSON.parse(str)
 
     return config
   }
 
-  static async loadConfig(path) {
-    return await import(path)
-  }
+  static async loadManifest (path) {
+    let buf = null
+    try {
+      buf = await FileUtility.read(path)
+    } catch (err) {
+      return {}
+    }
 
-  static loadManifest(path) {
-    return new Promise((resolve, reject) => {
-      fs.readFile(path, (err, data) => {
-        if (err) return reject(err)
-        const manifest = JSON.parse(data.toString('utf8'))
-        resolve(manifest)
-      })
-    })
+    let str = buf.toString('utf8')
+    let manifest = JSON.parse(str)
+
+    return manifest
   }
 }
 

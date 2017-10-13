@@ -1,0 +1,15 @@
+{
+  "manifest": "./manifest.json",
+  "output": {
+    "name": "[name].[version]"
+  },
+  "src": [
+    "!**/*.map"
+  ],
+  "tasks": {
+    "pre": [
+      "echo first",
+      "echo second"
+    ]
+  }
+}

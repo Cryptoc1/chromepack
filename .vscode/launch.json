@@ -5,17 +5,25 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Launch (with test args)",
       "type": "node",
       "request": "launch",
-      "name": "Launch",
       "program": "${workspaceFolder}/dist/chromepack.js",
       "args": [
         "-c",
-        "test/chromepack.config.js"
+        "test/chromepack.config.json"
+      ],
+      "stopOnEntry": false,
+      "runtimeExecutable": null,
+      "runtimeArgs": [
+        "--nolazy"
       ],
       "console": "integratedTerminal",
+      "preLaunchTask": "build",
       "sourceMaps": true,
-      "preLaunchTask": "build"
+      "outFiles": [
+        "${workspaceFolder}/dist/**/*.js"
+      ]
     }
   ]
 }
