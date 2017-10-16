@@ -3,6 +3,7 @@
 Chromepack is a small tool to simplify deployment of Chrome Extensions.
 
 `$ npm install -g chromepack`
+
 `$ chromepack -c chromepack.config.json`
 
 ### Usage
