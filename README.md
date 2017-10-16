@@ -2,6 +2,9 @@
 
 Chromepack is a small tool to simplify deployment of Chrome Extensions.
 
+`$ npm install -g chromepack`
+`$ chromepack -c chromepack.config.json`
+
 ### Usage
 
 Simply run `chromepack` in a directory containing a `chromepack.config.json` file, or use `chromepack -c` to specify a path to your `chromepack.config.json` file.
