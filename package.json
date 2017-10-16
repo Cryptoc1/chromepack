@@ -2,7 +2,10 @@
   "name": "chromepack",
   "version": "1.0.0",
   "description": "A tool for packaging Chrome Extensions",
-  "main": "dist/chromepack.js",
+  "main": "dist/chrome-packer.js",
+  "bin": {
+    "chromepack": "./bin/chromepack.js"
+  },
   "scripts": {
     "build": "node node_modules/webpack/bin/webpack.js --colors --progress",
     "run": "node dist/chromepack.js",

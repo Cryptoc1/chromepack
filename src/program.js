@@ -23,7 +23,13 @@ class Program {
   }
 
   async main (argv) {
-    let config = await ConfigUtility.load(argv.config, argv.manifest)
+    let config = null
+    try {
+      config = await ConfigUtility.load(argv.config, argv.manifest)
+    } catch (err) {
+      console.error(`[!] Unable to read config file \`${argv.config}\`.\nHave you tried using the \`-c\` option?`)
+      return
+    }
 
     this.packer = new ChromePacker(config)
 

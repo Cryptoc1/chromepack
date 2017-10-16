@@ -6,7 +6,10 @@ const BUILD_DIR = path.resolve(__dirname, './dist')
 const config = {
   devtool: 'source-map',
 
-  entry: `${SRC_DIR}/chromepack.js`,
+  entry: {
+    chromepack: `${SRC_DIR}/chromepack.js`,
+    'chrome-packer': `${SRC_DIR}/chrome-packer.js`
+  },
 
   module: {
     loaders: [{
@@ -23,7 +26,7 @@ const config = {
   },
 
   output: {
-    filename: 'chromepack.js',
+    filename: '[name].js',
     path: BUILD_DIR
   },
 

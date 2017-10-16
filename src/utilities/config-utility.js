@@ -59,8 +59,7 @@ class ConfigUtility {
   static async load (configPath, manifestPath) {
     configPath = path.resolve(WORKING_DIR, configPath)
     let config = await ConfigUtility.loadConfig(configPath)
-    let index = configPath.lastIndexOf(path.sep)
-    config.__dir = configPath.substring(0, index < 0 ? configPath.length : index)
+    config.__dir = path.dirname(configPath)
 
     manifestPath = path.resolve(path.parse(configPath).dir, Util.hasValue(manifestPath) ? manifestPath : Util.hasValue(config.manifest) ? config.manifest : './manifest.json')
     let manifest = await ConfigUtility.loadManifest(manifestPath)

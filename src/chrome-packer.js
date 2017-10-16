@@ -135,9 +135,13 @@ class ChromePacker extends EventEmitter {
   }
 
   runTask (task, rejectOnStdErr = false) {
-    return new Promise((resolve, reject) => exec(task.command, (err, stdout, stderr) => {
-      if (err || (stderr && rejectOnStdErr)) return reject(err || new Error(`Child command wrote to stderr: \n${stderr}`))
-      resolve(stdout)
+    const options = {
+      cwd: this.config.__dir
+    }
+
+    return new Promise((resolve, reject) => exec(task.command, options, (err, stdout, stderr) => {
+      if (err || (stderr && rejectOnStdErr)) return reject(err || new Error(`Child command wrote to stderr: \n${stderr.toString()}`))
+      resolve(stdout.toString())
     }))
   }
 
@@ -165,4 +169,5 @@ class ChromePacker extends EventEmitter {
   }
 }
 
+export { ChromePacker }
 export default ChromePacker
